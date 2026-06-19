@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bolão da Copa</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, -apple-system, sans-serif; background: #f5f5f3; color: #1a1a18; min-height: 100vh; padding: 1.5rem 1rem; }
+.wrap { max-width: 700px; margin: 0 auto; }
+.header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.header-left { display: flex; align-items: center; gap: 12px; }
+.header h1 { font-size: 22px; font-weight: 500; }
+.sync-status { font-size: 12px; color: #9b9b97; display: flex; align-items: center; gap: 6px; }
+.sync-status.ok { color: #0f6e56; }
+.sync-status.err { color: #854f0b; }
+.scoreboard { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1rem; }
+.score-card { background: #ebebea; border-radius: 8px; padding: 1rem 1.25rem; text-align: center; }
+.score-card .label { font-size: 13px; color: #6b6b68; margin-bottom: 6px; }
+.score-card .pts { font-size: 36px; font-weight: 500; color: #1a1a18; }
+.score-card .sub { font-size: 12px; color: #9b9b97; margin-top: 4px; }
+.live-banner { display: flex; align-items: center; gap: 8px; background: #fcebeb; color: #791f1f; border-radius: 8px; padding: 10px 14px; margin-bottom: 1rem; font-size: 13px; }
+.live-dot { width: 8px; height: 8px; border-radius: 50%; background: #a32d2d; flex-shrink: 0; }
+.legend { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 1.25rem; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #6b6b68; }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+.round-tabs { display: flex; gap: 8px; margin-bottom: 1rem; }
+.tab { border: 0.5px solid #ccc; border-radius: 8px; padding: 6px 14px; font-size: 13px; cursor: pointer; background: transparent; color: #6b6b68; font-family: inherit; }
+.tab.active { background: #dbeafe; color: #1e40af; border-color: transparent; }
+.games-list { display: flex; flex-direction: column; gap: 8px; }
+.game-row { background: #fff; border: 0.5px solid #e0dfd8; border-radius: 12px; padding: 12px 14px; display: grid; grid-template-columns: 1fr auto auto auto; align-items: center; gap: 8px; }
+.game-row.is-live { border: 1px solid #e24b4a; }
+.game-name { font-size: 13px; font-weight: 500; }
+.game-name .live-tag { font-size: 10px; color: #a32d2d; margin-left: 6px; }
+.auto-tag { font-size: 10px; color: #0f6e56; margin-left: 4px; }
+.palpite { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 56px; }
+.palpite .who { font-size: 11px; color: #9b9b97; }
+.palpite .score-guess { font-size: 13px; color: #6b6b68; font-family: monospace; }
+.real-input { display: flex; align-items: center; gap: 4px; }
+.real-input input { width: 34px; text-align: center; font-size: 13px; border: 0.5px solid #ccc; border-radius: 8px; padding: 4px 2px; background: #f5f5f3; color: #1a1a18; font-family: monospace; }
+.real-input input:focus { outline: none; border-color: #888; }
+.real-input span { font-size: 13px; color: #6b6b68; }
+.badges-col { display: flex; gap: 6px; }
+.badge { font-size: 11px; padding: 3px 8px; border-radius: 8px; min-width: 28px; text-align: center; font-weight: 500; }
+.b-exact { background: #d1fae5; color: #065f46; }
+.b-result { background: #dbeafe; color: #1e40af; }
+.b-win { background: #fef3c7; color: #92400e; }
+.b-miss { background: #f0f0ee; color: #9b9b97; }
+.b-na { background: #f0f0ee; color: #9b9b97; }
+@media (max-width: 520px) {
+  .game-row { grid-template-columns: 1fr 1fr; }
+  .game-name { grid-column: 1 / -1; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div class="header-left">
+      <span style="font-size:22px;">🏆</span>
+      <h1>Bolão da Copa</h1>
+    </div>
+    <div class="sync-status" id="sync-status">sincronizando...</div>
+  </div>
+  <div id="live-banner-zone"></div>
+  <div class="scoreboard">
+    <div class="score-card">
+      <div class="label">P.H</div>
+      <div class="pts" id="pts-ph">0</div>
+      <div class="sub" id="sub-ph">— jogos pontuados</div>
+    </div>
+    <div class="score-card">
+      <div class="label">Gabi</div>
+      <div class="pts" id="pts-gabi">0</div>
+      <div class="sub" id="sub-gabi">— jogos pontuados</div>
+    </div>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#065f46"></div> 3 pts — placar exato</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#1e40af"></div> 2 pts — resultado + diferença</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#92400e"></div> 1 pt — só o resultado</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ccc"></div> 0 pts — errou</div>
+  </div>
+  <div class="round-tabs" id="tabs"></div>
+  <div class="games-list" id="games-list"></div>
+</div>
+<script>
+const roundsRaw = [
+  [["Mexico x Africa do Sul","1x0","2x1","Mexico","South Africa"],
+   ["Coreia do Sul x Rep. Tcheca","0x0","1x1","South Korea","Czech Republic"],
+   ["Canadá x Bósnia","2x0","1x0","Canada","Bosnia and Herzegovina"],
+   ["EUA x Paraguai","1x2","0x1","USA","Paraguay"],
+   ["Suíça x Qatar","1x1","0x0","Switzerland","Qatar"],
+   ["Marrocos x Brasil","0x2","3x2","Morocco","Brazil"],
+   ["Haiti x Escócia","2x2","1x1","Haiti","Scotland"],
+   ["Austrália x Turquia","0x1","0x0","Australia","Turkey"],
+   ["Alemanha x Curaçao","5x0","4x0","Germany","Curaçao"],
+   ["Japão x Holanda","2x1","1x2","Japan","Netherlands"],
+   ["Costa do Marfim x Equador","0x2","1x0","Ivory Coast","Ecuador"],
+   ["Suécia x Tunisia","1x1","0x0","Sweden","Tunisia"],
+   ["Espanha x Cabo Verde","4x0","3x0","Spain","Cape Verde"],
+   ["Bélgica x Egito","3x0","4x1","Belgium","Egypt"],
+   ["Arabia Saudita x Uruguai","1x3","0x2","Saudi Arabia","Uruguay"],
+   ["Irã x Nova Zelândia","1x0","0x0","Iran","New Zealand"],
+   ["França x Senegal","4x0","1x0","France","Senegal"],
+   ["Iraque x Noruega","1x2","0x2","Iraq","Norway"],
+   ["Argentina x Argelia","3x0","2x1","Argentina","Algeria"],
+   ["Austria x Jordânia","2x0","3x0","Austria","Jordan"],
+   ["Portugal x Congo","3x0","4x0","Portugal","DR Congo"],
+   ["Inglaterra x Croácia","2x2","0x1","England","Croatia"],
+   ["Gana x Panamá","0x1","0x0","Ghana","Panama"],
+   ["Uzbesquistão x Colombia","1x3","2x0","Uzbekistan","Colombia"]],
+  [["Rep. Tcheca x Africa do Sul","1x2","0x1","Czech Republic","South Africa"],
+   ["Suiça x Bósnia","1x0","3x0","Switzerland","Bosnia and Herzegovina"],
+   ["Canadá x Qatar","0x0","1x1","Canada","Qatar"],
+   ["México x Coreia do Sul","3x2","2x1","Mexico","South Korea"],
+   ["EUA  x Austrália","0x1","0x2","USA","Australia"],
+   ["Escócia x Marrocos","0x2","0x3","Scotland","Morocco"],
+   ["Brasil x Haiti","5x0","3x0","Brazil","Haiti"],
+   ["Turquia x Paraguai","1x2","1x0","Turkey","Paraguay"],
+   ["Holanda x Suécia","2x1","2x0","Netherlands","Sweden"],
+   ["Alemanha x Costa do Marfim","4x0","1x0","Germany","Ivory Coast"],
+   ["Equador x Curaçao","2x0","3x0","Ecuador","Curaçao"],
+   ["Tunísia x Japão","0x1","0x2","Tunisia","Japan"],
+   ["Espanha x Arábia Saudíta","3x1","3x0","Spain","Saudi Arabia"],
+   ["Bélgica x Irã","2x0","4x0","Belgium","Iran"],
+   ["Uruguai x Cabo Verde","3x1","4x0","Uruguay","Cape Verde"],
+   ["Nova Zelândia x Egito","0x0","1x1","New Zealand","Egypt"],
+   ["Argentina x Austria","3x1","2x1","Argentina","Austria"],
+   ["França x Iraque","4x0","5x0","France","Iraq"],
+   ["Noruega x Senegal","1x0","0x1","Norway","Senegal"],
+   ["Jordânia x Argélia","2x2","0x2","Jordan","Algeria"],
+   ["Portugal x Uzbequistão","3x0","4x0","Portugal","Uzbekistan"],
+   ["Inglaterra x Gana","5x1","3x0","England","Ghana"],
+   ["Panamá x Croácia","1x3","0x3","Panama","Croatia"],
+   ["Colombia x Congo","4x1","3x0","Colombia","DR Congo"]],
+  [["Bósnia x Qatar","1x1","0x0","Bosnia and Herzegovina","Qatar"],
+   ["Suíça x Canadá","1x1","1x0","Switzerland","Canada"],
+   ["Haiti x Marrocos","0x2","0x4","Haiti","Morocco"],
+   ["Brasil x Escócia","2x1","0x0","Brazil","Scotland"],
+   ["Rep. Tcheca x México","1x3","1x2","Czech Republic","Mexico"],
+   ["Africa do Sul x Coreia do Sul","1x1","2x2","South Africa","South Korea"],
+   ["Alemanha x Equador","2x1","3x0","Germany","Ecuador"],
+   ["Costa do Marfim x Curaçao","1x0","3x0","Ivory Coast","Curaçao"],
+   ["Tunísia x Holanda","0x3","0x4","Tunisia","Netherlands"],
+   ["Japão x Suécia","2x1","1x0","Japan","Sweden"],
+   ["Paraguai x Austrália","1x1","0x0","Paraguay","Australia"],
+   ["EUA x Turquia","2x1","1x0","USA","Turkey"],
+   ["Senegal x Iraque","1x0","2x0","Senegal","Iraq"],
+   ["França x Noruega","2x1","3x1","France","Norway"],
+   ["Cabo Verde x Arábia Saúdita","0x0","2x0","Cape Verde","Saudi Arabia"],
+   ["Espanha x Uruguai","1x2","0x1","Spain","Uruguay"],
+   ["Bélgica x Nova Zelândia","1x0","3x1","Belgium","New Zealand"],
+   ["Egito x Irã","1x1","0x0","Egypt","Iran"],
+   ["Inglaterra x Panamá","4x1","5x0","England","Panama"],
+   ["Croácia x Gana","4x0","3x1","Croatia","Ghana"],
+   ["Congo x Uzbequistão","0x0","2x2","DR Congo","Uzbekistan"],
+   ["Portugal x Colombia","2x2","1x2","Portugal","Colombia"],
+   ["Argentina x Jordânia","3x0","5x0","Argentina","Jordan"],
+   ["Argélia x Austria","0x2","0x1","Algeria","Austria"]]
+];
+
+const RESULTS_STORAGE_KEY = 'bolao_results_v1';
+let results = {};
+try { results = JSON.parse(localStorage.getItem(RESULTS_STORAGE_KEY)) || {}; } catch(e) {}
+let apiMatches = [];
+let liveNow = [];
+let currentRound = 0;
+
+function parseScore(s){ const [a,b]=s.split('x').map(Number); return {a,b}; }
+function getResult(a,b){ return a>b?'A':b>a?'B':'D'; }
+function getDiff(a,b){ return a-b; }
+
+function calcPoints(guess, real){
+  if(!real) return null;
+  const g=parseScore(guess), r=parseScore(real);
+  if(g.a===r.a && g.b===r.b) return 3;
+  if(getResult(g.a,g.b)===getResult(r.a,r.b) && getDiff(g.a,g.b)===getDiff(r.a,r.b)) return 2;
+  if(getResult(g.a,g.b)===getResult(r.a,r.b)) return 1;
+  return 0;
+}
+
+function badgeEl(pts){
+  if(pts===null) return '<span class="badge b-na">—</span>';
+  if(pts===3) return '<span class="badge b-exact">3 pts</span>';
+  if(pts===2) return '<span class="badge b-result">2 pts</span>';
+  if(pts===1) return '<span class="badge b-win">1 pt</span>';
+  return '<span class="badge b-miss">0</span>';
+}
+
+function findApiMatch(team1, team2){
+  return apiMatches.find(m =>
+    (m.team1===team1 && m.team2===team2) || (m.team1===team2 && m.team2===team1)
+  );
+}
+
+function isMatchLive(m){
+  if(!m || !m.date || !m.time) return false;
+  if(m.score) return false;
+  try {
+    const timeStr = m.time.split(' ')[0];
+    const dt = new Date(m.date + 'T' + timeStr + ':00Z');
+    const now = new Date();
+    const diffMin = (now - dt) / 60000;
+    return diffMin >= 0 && diffMin <= 130;
+  } catch(e) { return false; }
+}
+
+function saveResults(){
+  try { localStorage.setItem(RESULTS_STORAGE_KEY, JSON.stringify(results)); } catch(e) {}
+}
+
+async function fetchApiData(){
+  const statusEl = document.getElementById('sync-status');
+  try {
+    const res = await fetch('https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json');
+    if(!res.ok) throw new Error('bad response');
+    const data = await res.json();
+    apiMatches = data.matches || [];
+    statusEl.className = 'sync-status ok';
+    statusEl.textContent = 'resultados oficiais sincronizados';
+
+    let autoFilled = false;
+    roundsRaw.forEach((round, ri) => {
+      round.forEach((g, gi) => {
+        const key = ri + '-' + gi;
+        if(results[key] && results[key].manual) return;
+        const m = findApiMatch(g[3], g[4]);
+        if(m && m.score && m.score.ft){
+          let a = m.score.ft[0], b = m.score.ft[1];
+          if(m.team1 !== g[3]) { const t=a; a=b; b=t; }
+          results[key] = { value: a+'x'+b, manual: false };
+          autoFilled = true;
+        }
+      });
+    });
+    if(autoFilled) saveResults();
+
+    liveNow = [];
+    roundsRaw.forEach((round, ri) => {
+      round.forEach((g, gi) => {
+        const m = findApiMatch(g[3], g[4]);
+        if(isMatchLive(m)) liveNow.push(g[0]);
+      });
+    });
+  } catch(e) {
+    statusEl.className = 'sync-status err';
+    statusEl.textContent = 'busca automática indisponível — edite manualmente';
+  }
+}
+
+function renderLiveBanner(){
+  const zone = document.getElementById('live-banner-zone');
+  if(liveNow.length === 0){ zone.innerHTML = ''; return; }
+  zone.innerHTML = '<div class="live-banner"><span class="live-dot"></span> Rolando agora: ' + liveNow.join(', ') + '</div>';
+}
+
+function updateTotals(){
+  let ptsPH=0, ptsGabi=0, cPH=0, cGabi=0;
+  roundsRaw.forEach((round, ri) => {
+    round.forEach((g, gi) => {
+      const key = ri+'-'+gi;
+      const real = results[key] ? results[key].value : null;
+      const ppH = calcPoints(g[1], real), pG = calcPoints(g[2], real);
+      if(ppH!==null){ ptsPH+=ppH; cPH++; }
+      if(pG!==null){ ptsGabi+=pG; cGabi++; }
+    });
+  });
+  document.getElementById('pts-ph').textContent = ptsPH;
+  document.getElementById('pts-gabi').textContent = ptsGabi;
+  document.getElementById('sub-ph').textContent = cPH+' jogo'+(cPH!==1?'s':'')+' pontuado'+(cPH!==1?'s':'');
+  document.getElementById('sub-gabi').textContent = cGabi+' jogo'+(cGabi!==1?'s':'')+' pontuado'+(cGabi!==1?'s':'');
+}
+
+function renderTabs(){
+  document.getElementById('tabs').innerHTML = ['Rodada 1','Rodada 2','Rodada 3'].map((t,i) =>
+    '<button class="tab '+(i===currentRound?'active':'')+'" onclick="switchTab('+i+')">'+t+'</button>'
+  ).join('');
+}
+
+function renderGames(){
+  const round = roundsRaw[currentRound];
+  document.getElementById('games-list').innerHTML = round.map((g, gi) => {
+    const key = currentRound+'-'+gi;
+    const stored = results[key];
+    const real = stored ? stored.value : '';
+    const isAuto = stored && stored.manual === false;
+    const [ra, rb] = real ? real.split('x') : ['',''];
+    const ppH = calcPoints(g[1], real || null);
+    const pG = calcPoints(g[2], real || null);
+    const m = findApiMatch(g[3], g[4]);
+    const live = isMatchLive(m);
+    return '<div class="game-row'+(live?' is-live':'')+'">'+
+      '<div class="game-name">'+g[0]+(live?'<span class="live-tag">● em andamento</span>':'')+(isAuto?'<span class="auto-tag">auto</span>':'')+'</div>'+
+      '<div class="palpite"><span class="who">P.H</span><span class="score-guess">'+g[1]+'</span></div>'+
+      '<div class="palpite"><span class="who">Gabi</span><span class="score-guess">'+g[2]+'</span></div>'+
+      '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">'+
+        '<div class="real-input">'+
+          '<input type="number" min="0" max="99" value="'+ra+'" placeholder="0" data-key="'+key+'" oninput="handleInput(this)" />'+
+          '<span>x</span>'+
+          '<input type="number" min="0" max="99" value="'+rb+'" placeholder="0" data-key="'+key+'" oninput="handleInput(this)" />'+
+        '</div>'+
+        '<div class="badges-col">'+badgeEl(ppH)+badgeEl(pG)+'</div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function handleInput(el){
+  const key = el.dataset.key;
+  const row = el.closest('.game-row');
+  const inputs = row.querySelectorAll('input[data-key]');
+  const a = inputs[0].value.trim(), b = inputs[1].value.trim();
+  if(a !== '' && b !== ''){
+    results[key] = { value: a+'x'+b, manual: true };
+  } else {
+    delete results[key];
+  }
+  saveResults();
+  updateTotals();
+  const [ri, gi] = key.split('-').map(Number);
+  const g = roundsRaw[ri][gi];
+  const real = results[key] ? results[key].value : null;
+  row.querySelector('.badges-col').innerHTML = badgeEl(calcPoints(g[1], real)) + badgeEl(calcPoints(g[2], real));
+}
+
+function switchTab(i){
+  currentRound = i;
+  renderTabs();
+  renderGames();
+}
+
+async function init(){
+  renderTabs();
+  renderGames();
+  updateTotals();
+  await fetchApiData();
+  renderLiveBanner();
+  renderGames();
+  updateTotals();
+}
+init();
+</script>
+</body>
+</html>
