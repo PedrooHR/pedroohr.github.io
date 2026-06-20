@@ -198,8 +198,17 @@ function isMatchLive(m){
   if(!m || !m.date || !m.time) return false;
   if(m.score) return false;
   try {
-    const timeStr = m.time.split(' ')[0];
-    const dt = new Date(m.date + 'T' + timeStr + ':00Z');
+    // m.time arrives as e.g. "18:00 UTC-4" — the offset describes the match's
+    // local kickoff time, it is NOT already UTC. Must apply the offset explicitly.
+    const timeStr = m.time.split(' ')[0]; // "18:00"
+    const tzPart = m.time.split('UTC')[1]; // "-4", "+1", "-5:30" etc (may be undefined)
+    const offsetHours = tzPart ? parseFloat(tzPart) : 0;
+    const sign = offsetHours < 0 ? '-' : '+';
+    const absH = Math.abs(offsetHours);
+    const offH = String(Math.floor(absH)).padStart(2, '0');
+    const offM = String(Math.round((absH % 1) * 60)).padStart(2, '0');
+    const isoOffset = sign + offH + ':' + offM; // e.g. "-04:00"
+    const dt = new Date(m.date + 'T' + timeStr + ':00' + isoOffset);
     const now = new Date();
     const diffMin = (now - dt) / 60000;
     return diffMin >= 0 && diffMin <= 130;
