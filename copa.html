@@ -7,24 +7,35 @@
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: system-ui, -apple-system, sans-serif; background: #f5f5f3; color: #1a1a18; min-height: 100vh; padding: 1.5rem 1rem; }
-.wrap { max-width: 700px; margin: 0 auto; }
-.header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.wrap { max-width: 720px; margin: 0 auto; }
+.header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 1.25rem; flex-wrap: wrap; }
 .header-left { display: flex; align-items: center; gap: 12px; }
 .header h1 { font-size: 22px; font-weight: 500; }
 .sync-status { font-size: 12px; color: #9b9b97; display: flex; align-items: center; gap: 6px; }
 .sync-status.ok { color: #0f6e56; }
 .sync-status.err { color: #854f0b; }
-.scoreboard { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1rem; }
-.score-card { background: #ebebea; border-radius: 8px; padding: 1rem 1.25rem; text-align: center; }
-.score-card .label { font-size: 13px; color: #6b6b68; margin-bottom: 6px; }
-.score-card .pts { font-size: 36px; font-weight: 500; color: #1a1a18; }
-.score-card .sub { font-size: 12px; color: #9b9b97; margin-top: 4px; }
+
+.main-board { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 10px; }
+.main-card { background: #1a1a18; border-radius: 14px; padding: 1.1rem 1.25rem; text-align: center; position: relative; overflow: hidden; }
+.main-card.leader::before { content: '★'; position: absolute; top: 10px; right: 12px; font-size: 13px; color: #f5c945; }
+.main-card .label { font-size: 13px; color: #b8b8b3; margin-bottom: 4px; font-weight: 500; }
+.main-card .pts { font-size: 40px; font-weight: 600; color: #fff; line-height: 1.05; }
+.main-card .sub { font-size: 11px; color: #8c8c87; margin-top: 4px; }
+
+.phase-board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 1.25rem; }
+.phase-card { background: #ebebea; border-radius: 10px; padding: 8px 6px; text-align: center; }
+.phase-card .ph-label { font-size: 10px; color: #8c8c87; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.02em; }
+.phase-card .ph-scores { display: flex; justify-content: center; gap: 8px; font-size: 14px; font-weight: 600; }
+.phase-card .ph-scores .a { color: #1e40af; }
+.phase-card .ph-scores .b { color: #a32d2d; }
+.phase-card .ph-sep { color: #c4c4c0; font-weight: 400; }
+
 .live-banner { display: flex; align-items: center; gap: 8px; background: #fcebeb; color: #791f1f; border-radius: 8px; padding: 10px 14px; margin-bottom: 1rem; font-size: 13px; }
 .live-dot { width: 8px; height: 8px; border-radius: 50%; background: #a32d2d; flex-shrink: 0; }
 .legend { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 1.25rem; }
 .legend-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #6b6b68; }
 .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
-.round-tabs { display: flex; gap: 8px; margin-bottom: 1rem; }
+.round-tabs { display: flex; gap: 8px; margin-bottom: 1rem; flex-wrap: wrap; }
 .tab { border: 0.5px solid #ccc; border-radius: 8px; padding: 6px 14px; font-size: 13px; cursor: pointer; background: transparent; color: #6b6b68; font-family: inherit; }
 .tab.active { background: #dbeafe; color: #1e40af; border-color: transparent; }
 .games-list { display: flex; flex-direction: column; gap: 8px; }
@@ -33,13 +44,15 @@ body { font-family: system-ui, -apple-system, sans-serif; background: #f5f5f3; c
 .game-name { font-size: 13px; font-weight: 500; }
 .game-name .live-tag { font-size: 10px; color: #a32d2d; margin-left: 6px; }
 .auto-tag { font-size: 10px; color: #0f6e56; margin-left: 4px; }
-.palpite { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 56px; }
+.palpite { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 68px; max-width: 130px; margin: 0 auto; text-align: center; }
 .palpite .who { font-size: 11px; color: #9b9b97; }
-.palpite .score-guess { font-size: 13px; color: #6b6b68; font-family: monospace; }
-.real-input { display: flex; align-items: center; gap: 4px; }
+.palpite .score-guess { font-size: 13px; color: #6b6b68; font-family: monospace; text-align: center; }
+.palpite .pen-tag { font-size: 10px; color: #6b6b68; display: block; font-family: system-ui, sans-serif; line-height: 1.3; white-space: normal; margin-top: 1px; }
+.real-input { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
 .real-input input { width: 34px; text-align: center; font-size: 13px; border: 0.5px solid #ccc; border-radius: 8px; padding: 4px 2px; background: #f5f5f3; color: #1a1a18; font-family: monospace; }
 .real-input input:focus { outline: none; border-color: #888; }
 .real-input span { font-size: 13px; color: #6b6b68; }
+.pen-select { font-size: 11px; border: 0.5px solid #ccc; border-radius: 8px; padding: 3px 4px; background: #f5f5f3; color: #1a1a18; font-family: inherit; max-width: 110px; }
 .badges-col { display: flex; gap: 6px; }
 .badge { font-size: 11px; padding: 3px 8px; border-radius: 8px; min-width: 28px; text-align: center; font-weight: 500; }
 .b-exact { background: #d1fae5; color: #065f46; }
@@ -50,6 +63,7 @@ body { font-family: system-ui, -apple-system, sans-serif; background: #f5f5f3; c
 @media (max-width: 520px) {
   .game-row { grid-template-columns: 1fr 1fr; }
   .game-name { grid-column: 1 / -1; }
+  .phase-board { grid-template-columns: repeat(2, 1fr); }
 }
 </style>
 </head>
@@ -62,30 +76,18 @@ body { font-family: system-ui, -apple-system, sans-serif; background: #f5f5f3; c
     </div>
     <div class="sync-status" id="sync-status">sincronizando...</div>
   </div>
+
+  <div class="main-board" id="main-board"></div>
+  <div class="phase-board" id="phase-board"></div>
+
   <div id="live-banner-zone"></div>
-  <div class="scoreboard">
-    <div class="score-card">
-      <div class="label">P.H</div>
-      <div class="pts" id="pts-ph">0</div>
-      <div class="sub" id="sub-ph">— jogos pontuados</div>
-    </div>
-    <div class="score-card">
-      <div class="label">Gabi</div>
-      <div class="pts" id="pts-gabi">0</div>
-      <div class="sub" id="sub-gabi">— jogos pontuados</div>
-    </div>
-  </div>
-  <div class="legend">
-    <div class="legend-item"><div class="legend-dot" style="background:#065f46"></div> 3 pts — placar exato</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#1e40af"></div> 2 pts — resultado + diferença</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#92400e"></div> 1 pt — só o resultado</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#ccc"></div> 0 pts — errou</div>
-  </div>
+  <div class="legend" id="legend"></div>
   <div class="round-tabs" id="tabs"></div>
   <div class="games-list" id="games-list"></div>
 </div>
 <script>
-const roundsRaw = [
+/* ===================== DATA: GROUP STAGE (3 rounds) ===================== */
+const groupRounds = [
   [["Mexico x Africa do Sul","1x0","2x1","Mexico","South Africa"],
    ["Coreia do Sul x Rep. Tcheca","0x0","1x1","South Korea","Czech Republic"],
    ["Canadá x Bósnia","2x0","1x0","Canada","Bosnia & Herzegovina"],
@@ -160,24 +162,81 @@ const roundsRaw = [
    ["Argélia x Austria","0x2","0x1","Algeria","Austria"]]
 ];
 
-const RESULTS_STORAGE_KEY = 'bolao_results_v1';
+/* ===================== DATA: KNOCKOUT STAGE — 16-avos de final ===================== */
+const koGames = [
+  ["Africa do Sul x Canadá","1x2","1x2","South Africa","Canada",null,null],
+  ["Brasil x Japão","2x1","1x0","Brazil","Japan",null,null],
+  ["Alemanha x Paraguai","3x0","4x1","Germany","Paraguay",null,null],
+  ["Holanda x Marrocos","1x1","2x0","Netherlands","Morocco","Netherlands",null],
+  ["Costa do Marfim x Noruega","0x2","0x1","Ivory Coast","Norway",null,null],
+  ["França x Suécia","3x0","2x0","France","Sweden",null,null],
+  ["México x Equador","1x0","0x0","Mexico","Ecuador",null,"Ecuador"],
+  ["Inglaterra x Congo","4x0","3x0","England","DR Congo",null,null],
+  ["Bélgica x Senegal","3x1","1x0","Belgium","Senegal",null,null],
+  ["Estados Unidos x Bósnia","2x0","1x0","USA","Bosnia & Herzegovina",null,null],
+  ["Espanha x Austria","2x0","1x0","Spain","Austria",null,null],
+  ["Portugal x Croácia","1x2","1x2","Portugal","Croatia",null,null],
+  ["Suiça x Argelia","2x2","3x0","Switzerland","Algeria","Algeria",null],
+  ["Austrália x Egito","2x1","1x1","Australia","Egypt",null,"Australia"],
+  ["Argentina x Cabo Verde","2x0","1x0","Argentina","Cape Verde",null,null],
+  ["Colombia x Gana","1x0","1x2","Colombia","Ghana",null,null]
+];
+
+const PHASES = [
+  { id: 'r1', label: 'Rod. 1', kind: 'group' },
+  { id: 'r2', label: 'Rod. 2', kind: 'group' },
+  { id: 'r3', label: 'Rod. 3', kind: 'group' },
+  { id: 'ko1', label: '16-avos', kind: 'knockout' }
+];
+
+const STORAGE_KEY = 'bolao_results_unified_v1';
 let results = {};
-try { results = JSON.parse(localStorage.getItem(RESULTS_STORAGE_KEY)) || {}; } catch(e) {}
+try { results = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch(e) {}
 let apiMatches = [];
 let liveNow = [];
-let currentRound = 0;
+let currentTab = 0;
 
+/* ===================== SCORING: GROUP STAGE ===================== */
 function parseScore(s){ const [a,b]=s.split('x').map(Number); return {a,b}; }
 function getResult(a,b){ return a>b?'A':b>a?'B':'D'; }
 function getDiff(a,b){ return a-b; }
 
-function calcPoints(guess, real){
+function calcPointsGroup(guess, real){
   if(!real) return null;
   const g=parseScore(guess), r=parseScore(real);
   if(g.a===r.a && g.b===r.b) return 3;
   if(getResult(g.a,g.b)===getResult(r.a,r.b) && getDiff(g.a,g.b)===getDiff(r.a,r.b)) return 2;
   if(getResult(g.a,g.b)===getResult(r.a,r.b)) return 1;
   return 0;
+}
+
+/* ===================== SCORING: KNOCKOUT STAGE (handles penalties) ===================== */
+function winnerOf(scoreStr, teamA, teamB, penWinner){
+  const {a,b} = parseScore(scoreStr);
+  if(a > b) return teamA;
+  if(b > a) return teamB;
+  return penWinner || null;
+}
+
+function calcPointsKnockout(guessScore, guessPen, realScore, realPenWinner, teamA, teamB){
+  if(!realScore) return null;
+  const guessWinner = winnerOf(guessScore, teamA, teamB, guessPen);
+  const realWinner = winnerOf(realScore, teamA, teamB, realPenWinner);
+  if(!realWinner) return null;
+  if(guessWinner !== realWinner) return 0;
+  const g = parseScore(guessScore), r = parseScore(realScore);
+  const exactScore = (g.a === r.a && g.b === r.b);
+  const realIsDraw = (r.a === r.b);
+  const guessIsDraw = (g.a === g.b);
+  if(realIsDraw){
+    if(exactScore && guessIsDraw) return 3;
+    return 2;
+  } else {
+    if(exactScore) return 3;
+    const sameDiff = Math.abs(g.a - g.b) === Math.abs(r.a - r.b);
+    if(sameDiff) return 2;
+    return 1;
+  }
 }
 
 function badgeEl(pts){
@@ -198,16 +257,14 @@ function isMatchLive(m){
   if(!m || !m.date || !m.time) return false;
   if(m.score) return false;
   try {
-    // m.time arrives as e.g. "18:00 UTC-4" — the offset describes the match's
-    // local kickoff time, it is NOT already UTC. Must apply the offset explicitly.
-    const timeStr = m.time.split(' ')[0]; // "18:00"
-    const tzPart = m.time.split('UTC')[1]; // "-4", "+1", "-5:30" etc (may be undefined)
+    const timeStr = m.time.split(' ')[0];
+    const tzPart = m.time.split('UTC')[1];
     const offsetHours = tzPart ? parseFloat(tzPart) : 0;
     const sign = offsetHours < 0 ? '-' : '+';
     const absH = Math.abs(offsetHours);
     const offH = String(Math.floor(absH)).padStart(2, '0');
     const offM = String(Math.round((absH % 1) * 60)).padStart(2, '0');
-    const isoOffset = sign + offH + ':' + offM; // e.g. "-04:00"
+    const isoOffset = sign + offH + ':' + offM;
     const dt = new Date(m.date + 'T' + timeStr + ':00' + isoOffset);
     const now = new Date();
     const diffMin = (now - dt) / 60000;
@@ -216,9 +273,68 @@ function isMatchLive(m){
 }
 
 function saveResults(){
-  try { localStorage.setItem(RESULTS_STORAGE_KEY, JSON.stringify(results)); } catch(e) {}
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(results)); } catch(e) {}
 }
 
+/* ===================== PER-PHASE TOTALS ===================== */
+function computePhaseTotals(phase){
+  let ptsPH=0, ptsGabi=0, cPH=0, cGabi=0;
+  if(phase.kind === 'group'){
+    const roundIdx = parseInt(phase.id.slice(1)) - 1;
+    const round = groupRounds[roundIdx];
+    round.forEach((g, gi) => {
+      const key = phase.id+'-'+gi;
+      const real = results[key] ? results[key].value : null;
+      const ppH = calcPointsGroup(g[1], real), pG = calcPointsGroup(g[2], real);
+      if(ppH!==null){ ptsPH+=ppH; cPH++; }
+      if(pG!==null){ ptsGabi+=pG; cGabi++; }
+    });
+  } else if(phase.kind === 'knockout'){
+    koGames.forEach((g, gi) => {
+      const key = phase.id+'-'+gi;
+      const stored = results[key];
+      const real = stored ? stored.value : null;
+      const realPen = stored ? stored.pen : null;
+      const ppH = calcPointsKnockout(g[1], g[5], real, realPen, g[3], g[4]);
+      const pG = calcPointsKnockout(g[2], g[6], real, realPen, g[3], g[4]);
+      if(ppH!==null){ ptsPH+=ppH; cPH++; }
+      if(pG!==null){ ptsGabi+=pG; cGabi++; }
+    });
+  }
+  return { ptsPH, ptsGabi, cPH, cGabi };
+}
+
+function updateAllTotals(){
+  let totalPH=0, totalGabi=0;
+  const phaseTotals = PHASES.map(p => {
+    const t = computePhaseTotals(p);
+    totalPH += t.ptsPH; totalGabi += t.ptsGabi;
+    return { phase: p, ...t };
+  });
+
+  const phLeader = totalPH > totalGabi;
+  const gabiLeader = totalGabi > totalPH;
+  document.getElementById('main-board').innerHTML =
+    '<div class="main-card '+(phLeader?'leader':'')+'">'+
+      '<div class="label">P.H</div>'+
+      '<div class="pts">'+totalPH+'</div>'+
+      '<div class="sub">pontos totais</div>'+
+    '</div>'+
+    '<div class="main-card '+(gabiLeader?'leader':'')+'">'+
+      '<div class="label">Gabi</div>'+
+      '<div class="pts">'+totalGabi+'</div>'+
+      '<div class="sub">pontos totais</div>'+
+    '</div>';
+
+  document.getElementById('phase-board').innerHTML = phaseTotals.map(pt =>
+    '<div class="phase-card">'+
+      '<div class="ph-label">'+pt.phase.label+'</div>'+
+      '<div class="ph-scores"><span class="a">'+pt.ptsPH+'</span><span class="ph-sep">x</span><span class="b">'+pt.ptsGabi+'</span></div>'+
+    '</div>'
+  ).join('');
+}
+
+/* ===================== API SYNC ===================== */
 async function fetchApiData(){
   const statusEl = document.getElementById('sync-status');
   try {
@@ -230,9 +346,11 @@ async function fetchApiData(){
     statusEl.textContent = 'resultados oficiais sincronizados';
 
     let autoFilled = false;
-    roundsRaw.forEach((round, ri) => {
+
+    groupRounds.forEach((round, ri) => {
+      const phaseId = 'r' + (ri+1);
       round.forEach((g, gi) => {
-        const key = ri + '-' + gi;
+        const key = phaseId + '-' + gi;
         if(results[key] && results[key].manual) return;
         const m = findApiMatch(g[3], g[4]);
         if(m && m.score && m.score.ft){
@@ -243,14 +361,37 @@ async function fetchApiData(){
         }
       });
     });
+
+    koGames.forEach((g, gi) => {
+      const key = 'ko1-' + gi;
+      if(results[key] && results[key].manual) return;
+      const m = findApiMatch(g[3], g[4]);
+      if(m && m.score && m.score.ft){
+        let a = m.score.ft[0], b = m.score.ft[1];
+        if(m.team1 !== g[3]) { const t=a; a=b; b=t; }
+        let penWinner = null;
+        if(a === b && m.score.pen){
+          let pa = m.score.pen[0], pb = m.score.pen[1];
+          if(m.team1 !== g[3]) { const t=pa; pa=pb; pb=t; }
+          penWinner = pa > pb ? g[3] : g[4];
+        }
+        results[key] = { value: a+'x'+b, pen: penWinner, manual: false };
+        autoFilled = true;
+      }
+    });
+
     if(autoFilled) saveResults();
 
     liveNow = [];
-    roundsRaw.forEach((round, ri) => {
-      round.forEach((g, gi) => {
+    groupRounds.forEach((round) => {
+      round.forEach((g) => {
         const m = findApiMatch(g[3], g[4]);
         if(isMatchLive(m)) liveNow.push(g[0]);
       });
+    });
+    koGames.forEach((g) => {
+      const m = findApiMatch(g[3], g[4]);
+      if(isMatchLive(m)) liveNow.push(g[0]);
     });
   } catch(e) {
     statusEl.className = 'sync-status err';
@@ -264,39 +405,51 @@ function renderLiveBanner(){
   zone.innerHTML = '<div class="live-banner"><span class="live-dot"></span> Rolando agora: ' + liveNow.join(', ') + '</div>';
 }
 
-function updateTotals(){
-  let ptsPH=0, ptsGabi=0, cPH=0, cGabi=0;
-  roundsRaw.forEach((round, ri) => {
-    round.forEach((g, gi) => {
-      const key = ri+'-'+gi;
-      const real = results[key] ? results[key].value : null;
-      const ppH = calcPoints(g[1], real), pG = calcPoints(g[2], real);
-      if(ppH!==null){ ptsPH+=ppH; cPH++; }
-      if(pG!==null){ ptsGabi+=pG; cGabi++; }
-    });
-  });
-  document.getElementById('pts-ph').textContent = ptsPH;
-  document.getElementById('pts-gabi').textContent = ptsGabi;
-  document.getElementById('sub-ph').textContent = cPH+' jogo'+(cPH!==1?'s':'')+' pontuado'+(cPH!==1?'s':'');
-  document.getElementById('sub-gabi').textContent = cGabi+' jogo'+(cGabi!==1?'s':'')+' pontuado'+(cGabi!==1?'s':'');
-}
-
+/* ===================== RENDER: TABS & LEGEND ===================== */
 function renderTabs(){
-  document.getElementById('tabs').innerHTML = ['Rodada 1','Rodada 2','Rodada 3'].map((t,i) =>
-    '<button class="tab '+(i===currentRound?'active':'')+'" onclick="switchTab('+i+')">'+t+'</button>'
+  document.getElementById('tabs').innerHTML = PHASES.map((p,i) =>
+    '<button class="tab '+(i===currentTab?'active':'')+'" onclick="switchTab('+i+')">'+p.label+'</button>'
   ).join('');
 }
 
+function renderLegend(){
+  const phase = PHASES[currentTab];
+  if(phase.kind === 'group'){
+    document.getElementById('legend').innerHTML =
+      '<div class="legend-item"><div class="legend-dot" style="background:#065f46"></div> 3 pts — placar exato</div>'+
+      '<div class="legend-item"><div class="legend-dot" style="background:#1e40af"></div> 2 pts — resultado + diferença</div>'+
+      '<div class="legend-item"><div class="legend-dot" style="background:#92400e"></div> 1 pt — só o resultado</div>'+
+      '<div class="legend-item"><div class="legend-dot" style="background:#ccc"></div> 0 pts — errou</div>';
+  } else {
+    document.getElementById('legend').innerHTML =
+      '<div class="legend-item"><div class="legend-dot" style="background:#065f46"></div> 3 pts — exato (+ pênaltis certo)</div>'+
+      '<div class="legend-item"><div class="legend-dot" style="background:#1e40af"></div> 2 pts — diferença / pênaltis certo</div>'+
+      '<div class="legend-item"><div class="legend-dot" style="background:#92400e"></div> 1 pt — só quem passa</div>'+
+      '<div class="legend-item"><div class="legend-dot" style="background:#ccc"></div> 0 pts — errou</div>';
+  }
+}
+
+/* ===================== RENDER: GAMES LIST ===================== */
 function renderGames(){
-  const round = roundsRaw[currentRound];
+  const phase = PHASES[currentTab];
+  if(phase.kind === 'group'){
+    renderGroupGames(phase);
+  } else {
+    renderKnockoutGames(phase);
+  }
+}
+
+function renderGroupGames(phase){
+  const roundIdx = parseInt(phase.id.slice(1)) - 1;
+  const round = groupRounds[roundIdx];
   document.getElementById('games-list').innerHTML = round.map((g, gi) => {
-    const key = currentRound+'-'+gi;
+    const key = phase.id+'-'+gi;
     const stored = results[key];
     const real = stored ? stored.value : '';
     const isAuto = stored && stored.manual === false;
     const [ra, rb] = real ? real.split('x') : ['',''];
-    const ppH = calcPoints(g[1], real || null);
-    const pG = calcPoints(g[2], real || null);
+    const ppH = calcPointsGroup(g[1], real || null);
+    const pG = calcPointsGroup(g[2], real || null);
     const m = findApiMatch(g[3], g[4]);
     const live = isMatchLive(m);
     return '<div class="game-row'+(live?' is-live':'')+'">'+
@@ -305,9 +458,9 @@ function renderGames(){
       '<div class="palpite"><span class="who">Gabi</span><span class="score-guess">'+g[2]+'</span></div>'+
       '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">'+
         '<div class="real-input">'+
-          '<input type="number" min="0" max="99" value="'+ra+'" placeholder="0" data-key="'+key+'" oninput="handleInput(this)" />'+
+          '<input type="number" min="0" max="99" value="'+ra+'" placeholder="0" data-key="'+key+'" oninput="handleGroupInput(this)" />'+
           '<span>x</span>'+
-          '<input type="number" min="0" max="99" value="'+rb+'" placeholder="0" data-key="'+key+'" oninput="handleInput(this)" />'+
+          '<input type="number" min="0" max="99" value="'+rb+'" placeholder="0" data-key="'+key+'" oninput="handleGroupInput(this)" />'+
         '</div>'+
         '<div class="badges-col">'+badgeEl(ppH)+badgeEl(pG)+'</div>'+
       '</div>'+
@@ -315,10 +468,59 @@ function renderGames(){
   }).join('');
 }
 
-function handleInput(el){
+function guessLabel(score, pen, teamA, teamB, label){
+  const {a,b} = parseScore(score);
+  if(a === b && pen){
+    // pen holds the English API team name; map it back to the Portuguese name shown in the label
+    const [ptA, ptB] = label.split(' x ');
+    const ptName = (pen === teamA) ? ptA : ptB;
+    return score + ' <span class="pen-tag">('+ptName+' nos pênaltis)</span>';
+  }
+  return score;
+}
+
+function renderKnockoutGames(phase){
+  document.getElementById('games-list').innerHTML = koGames.map((g, gi) => {
+    const key = phase.id+'-'+gi;
+    const stored = results[key];
+    const real = stored ? stored.value : '';
+    const realPen = stored ? stored.pen : '';
+    const isAuto = stored && stored.manual === false;
+    const [ra, rb] = real ? real.split('x') : ['',''];
+    const ppH = calcPointsKnockout(g[1], g[5], real || null, realPen || null, g[3], g[4]);
+    const pG = calcPointsKnockout(g[2], g[6], real || null, realPen || null, g[3], g[4]);
+    const m = findApiMatch(g[3], g[4]);
+    const live = isMatchLive(m);
+    const isDrawNow = ra !== '' && rb !== '' && ra === rb;
+    const teamADisplay = g[0].split(' x ')[0];
+    const teamBDisplay = g[0].split(' x ')[1];
+    const penSelectHtml = '<select class="pen-select" data-key="'+key+'" onchange="handlePenInput(this)" style="'+(isDrawNow?'':'display:none;')+'">'+
+      '<option value="">pênaltis?</option>'+
+      '<option value="'+g[3]+'" '+(realPen===g[3]?'selected':'')+'>'+teamADisplay+'</option>'+
+      '<option value="'+g[4]+'" '+(realPen===g[4]?'selected':'')+'>'+teamBDisplay+'</option>'+
+    '</select>';
+    return '<div class="game-row'+(live?' is-live':'')+'">'+
+      '<div class="game-name">'+g[0]+(live?'<span class="live-tag">● em andamento</span>':'')+(isAuto?'<span class="auto-tag">auto</span>':'')+'</div>'+
+      '<div class="palpite"><span class="who">P.H</span><span class="score-guess">'+guessLabel(g[1], g[5], g[3], g[4], g[0])+'</span></div>'+
+      '<div class="palpite"><span class="who">Gabi</span><span class="score-guess">'+guessLabel(g[2], g[6], g[3], g[4], g[0])+'</span></div>'+
+      '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">'+
+        '<div class="real-input">'+
+          '<input type="number" min="0" max="99" value="'+ra+'" placeholder="0" data-key="'+key+'" data-role="score" oninput="handleKoInput(this)" />'+
+          '<span>x</span>'+
+          '<input type="number" min="0" max="99" value="'+rb+'" placeholder="0" data-key="'+key+'" data-role="score" oninput="handleKoInput(this)" />'+
+          penSelectHtml+
+        '</div>'+
+        '<div class="badges-col">'+badgeEl(ppH)+badgeEl(pG)+'</div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+/* ===================== INPUT HANDLERS ===================== */
+function handleGroupInput(el){
   const key = el.dataset.key;
   const row = el.closest('.game-row');
-  const inputs = row.querySelectorAll('input[data-key]');
+  const inputs = row.querySelectorAll('input[data-key="'+key+'"]');
   const a = inputs[0].value.trim(), b = inputs[1].value.trim();
   if(a !== '' && b !== ''){
     results[key] = { value: a+'x'+b, manual: true };
@@ -326,27 +528,53 @@ function handleInput(el){
     delete results[key];
   }
   saveResults();
-  updateTotals();
-  const [ri, gi] = key.split('-').map(Number);
-  const g = roundsRaw[ri][gi];
-  const real = results[key] ? results[key].value : null;
-  row.querySelector('.badges-col').innerHTML = badgeEl(calcPoints(g[1], real)) + badgeEl(calcPoints(g[2], real));
+  updateAllTotals();
+  renderGames();
+}
+
+function handleKoInput(el){
+  const key = el.dataset.key;
+  const row = el.closest('.game-row');
+  const inputs = row.querySelectorAll('input[data-role="score"][data-key="'+key+'"]');
+  const a = inputs[0].value.trim(), b = inputs[1].value.trim();
+  if(a !== '' && b !== ''){
+    const existingPen = (results[key] && results[key].pen) || null;
+    results[key] = { value: a+'x'+b, pen: (a===b ? existingPen : null), manual: true };
+  } else {
+    delete results[key];
+  }
+  saveResults();
+  updateAllTotals();
+  renderGames();
+}
+
+function handlePenInput(el){
+  const key = el.dataset.key;
+  if(!results[key]) results[key] = { value: null, pen: null, manual: true };
+  results[key].pen = el.value || null;
+  results[key].manual = true;
+  saveResults();
+  updateAllTotals();
+  renderGames();
 }
 
 function switchTab(i){
-  currentRound = i;
+  currentTab = i;
   renderTabs();
+  renderLegend();
   renderGames();
 }
 
+/* ===================== INIT ===================== */
 async function init(){
   renderTabs();
+  renderLegend();
   renderGames();
-  updateTotals();
+  updateAllTotals();
   await fetchApiData();
   renderLiveBanner();
   renderGames();
-  updateTotals();
+  updateAllTotals();
 }
 init();
 </script>
